@@ -39,3 +39,12 @@ export interface User {
   verificationStatus: 'pending' | 'verified' | 'failed';
   linkedInConnected: boolean;
 }
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  firstName?: string;
+  lastName?: string;
+  needsVerification: boolean;
+}
