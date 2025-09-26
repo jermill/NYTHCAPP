@@ -1,13 +1,17 @@
 import 'react-native-gesture-handler';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+// Types
+import { UserRole } from './src/types/navigation';
+
 // Screens
 import SplashScreen from './src/screens/SplashScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
+import RoleSelectionScreen from './src/screens/RoleSelectionScreen';
 
 // Types
 export type RootStackParamList = {
@@ -23,6 +27,8 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showRoleSelection, setShowRoleSelection] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   const handleSplashComplete = () => {
     setIsLoading(false);
@@ -30,14 +36,24 @@ export default function App() {
 
   const handleGetStarted = () => {
     setShowWelcome(false);
-    // Navigate to Role Selection screen (to be implemented)
-    console.log('Navigate to Role Selection');
+    setShowRoleSelection(true);
   };
 
   const handleSkip = () => {
     setShowWelcome(false);
-    // Navigate to Role Selection screen (to be implemented)
-    console.log('Skip to Role Selection');
+    setShowRoleSelection(true);
+  };
+
+  const handleRoleSelected = (role: UserRole) => {
+    setSelectedRole(role);
+    setShowRoleSelection(false);
+    // Navigate to authentication or next screen
+    console.log('Role selected:', role);
+  };
+
+  const handleBackToWelcome = () => {
+    setShowRoleSelection(false);
+    setShowWelcome(true);
   };
 
   if (isLoading) {
@@ -56,7 +72,19 @@ export default function App() {
     );
   }
 
-  // Main app navigation will go here
+  if (showRoleSelection) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" backgroundColor="#000100" />
+        <RoleSelectionScreen
+          onRoleSelected={handleRoleSelected}
+          onBack={handleBackToWelcome}
+        />
+      </SafeAreaProvider>
+    );
+  }
+
+  // Main app navigation will go here (after role selection)
   return (
     <SafeAreaProvider>
       <StatusBar style="light" backgroundColor="#000100" />
@@ -68,14 +96,7 @@ export default function App() {
           }}
         >
           {/* Future screens will be added here */}
-          <Stack.Screen
-            name="Welcome"
-            component={WelcomeScreen}
-            initialParams={{
-              onGetStarted: handleGetStarted,
-              onSkip: handleSkip
-            }}
-          />
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
