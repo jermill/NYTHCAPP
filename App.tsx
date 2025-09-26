@@ -6,13 +6,14 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Types
-import { UserRole, AuthUser } from './src/types/navigation';
+import { UserRole, AuthUser, LinkedInProfile } from './src/types/navigation';
 
 // Screens
 import SplashScreen from './src/screens/SplashScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import RoleSelectionScreen from './src/screens/RoleSelectionScreen';
 import AuthenticationScreen from './src/screens/AuthenticationScreen';
+import LinkedInVerificationScreen from './src/screens/LinkedInVerificationScreen';
 
 // Types
 export type RootStackParamList = {
@@ -30,6 +31,7 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [showRoleSelection, setShowRoleSelection] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
+  const [showLinkedInVerification, setShowLinkedInVerification] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser | null>(null);
 
@@ -66,8 +68,31 @@ export default function App() {
   const handleAuthenticationComplete = (user: AuthUser) => {
     setAuthenticatedUser(user);
     setShowAuthentication(false);
-    // Navigate to main app or verification screen
-    console.log('User authenticated:', user);
+
+    if (user.needsVerification && user.role === 'alumni') {
+      // Alumni need LinkedIn verification
+      setShowLinkedInVerification(true);
+    } else {
+      // Students and guests go directly to main app
+      console.log('User authenticated, proceeding to main app:', user);
+    }
+  };
+
+  const handleBackToAuthentication = () => {
+    setShowLinkedInVerification(false);
+    setShowAuthentication(true);
+  };
+
+  const handleLinkedInVerificationComplete = (verified: boolean, linkedInData?: LinkedInProfile) => {
+    setShowLinkedInVerification(false);
+
+    if (verified && linkedInData) {
+      // Update user with LinkedIn data and proceed to main app
+      console.log('LinkedIn verification successful:', { user: authenticatedUser, linkedInData });
+    } else {
+      // User chose to skip or verification failed - still proceed to main app
+      console.log('LinkedIn verification skipped or failed, proceeding to main app');
+    }
   };
 
   if (isLoading) {
@@ -111,7 +136,21 @@ export default function App() {
     );
   }
 
-  // Main app navigation will go here (after authentication)
+  if (showLinkedInVerification && authenticatedUser) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" backgroundColor="#000100" />
+        <LinkedInVerificationScreen
+          user={authenticatedUser}
+          onVerificationComplete={handleLinkedInVerificationComplete}
+          onSkip={() => handleLinkedInVerificationComplete(false)}
+          onBack={handleBackToAuthentication}
+        />
+      </SafeAreaProvider>
+    );
+  }
+
+  // Main app navigation will go here (after authentication/verification)
   return (
     <SafeAreaProvider>
       <StatusBar style="light" backgroundColor="#000100" />

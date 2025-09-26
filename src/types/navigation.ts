@@ -48,3 +48,26 @@ export interface AuthUser {
   lastName?: string;
   needsVerification: boolean;
 }
+
+export interface LinkedInProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  education: LinkedInEducation[];
+  profilePicture?: string;
+}
+
+export interface LinkedInEducation {
+  schoolName: string;
+  fieldOfStudy?: string;
+  degree?: string;
+  startDate?: {
+    year: number;
+    month?: number;
+  };
+  endDate?: {
+    year: number;
+    month?: number;
+  };
+}
